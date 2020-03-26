@@ -1,25 +1,25 @@
-/*
-The MIT License (MIT)
-
-Copyright (c) 2013-2015 SRS(ossrs)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013-2020 Winlin
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #include <srs_app_reload.hpp>
 
@@ -35,198 +35,188 @@ ISrsReloadHandler::~ISrsReloadHandler()
 {
 }
 
-int ISrsReloadHandler::on_reload_listen()
+srs_error_t ISrsReloadHandler::on_reload_listen()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_utc_time()
+srs_error_t ISrsReloadHandler::on_reload_utc_time()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_max_conns()
+srs_error_t ISrsReloadHandler::on_reload_max_conns()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_pid()
+srs_error_t ISrsReloadHandler::on_reload_pid()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_log_tank()
+srs_error_t ISrsReloadHandler::on_reload_log_tank()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_log_level()
+srs_error_t ISrsReloadHandler::on_reload_log_level()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_log_file()
+srs_error_t ISrsReloadHandler::on_reload_log_file()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_pithy_print()
+srs_error_t ISrsReloadHandler::on_reload_pithy_print()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_http_api_enabled()
+srs_error_t ISrsReloadHandler::on_reload_http_api_enabled()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_http_api_disabled()
+srs_error_t ISrsReloadHandler::on_reload_http_api_disabled()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_http_stream_enabled()
+srs_error_t ISrsReloadHandler::on_reload_http_api_crossdomain()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_http_stream_disabled()
+srs_error_t ISrsReloadHandler::on_reload_http_api_raw_api()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_http_stream_updated()
+srs_error_t ISrsReloadHandler::on_reload_http_stream_enabled()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_http_updated()
+srs_error_t ISrsReloadHandler::on_reload_http_stream_disabled()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_http_remux_updated(string vhost)
+srs_error_t ISrsReloadHandler::on_reload_http_stream_updated()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_added(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_http_stream_crossdomain()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_removed(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_http_updated()
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_atc(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_http_remux_updated(string vhost)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_gop_cache(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_added(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_queue_length(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_removed(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_time_jitter(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_play(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_mix_correct(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_forward(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_forward(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_dash(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_hls(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_hls(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_hds(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_hds(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_dvr(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_dvr(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_mr(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_dvr_apply(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_mw(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_publish(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_smi(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_tcp_nodelay(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_tcp_nodelay(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_realtime(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_realtime(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_chunk_size(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_p1stpt(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_transcode(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_pnt(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_vhost_exec(string /*vhost*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_chunk_size(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_ingest_removed(string /*vhost*/, string /*ingest_id*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_vhost_transcode(string /*vhost*/)
+srs_error_t ISrsReloadHandler::on_reload_ingest_added(string /*vhost*/, string /*ingest_id*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_ingest_removed(string /*vhost*/, string /*ingest_id*/)
+srs_error_t ISrsReloadHandler::on_reload_ingest_updated(string /*vhost*/, string /*ingest_id*/)
 {
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 
-int ISrsReloadHandler::on_reload_ingest_added(string /*vhost*/, string /*ingest_id*/)
+srs_error_t ISrsReloadHandler::on_reload_user_info()
 {
-    return ERROR_SUCCESS;
-}
-
-int ISrsReloadHandler::on_reload_ingest_updated(string /*vhost*/, string /*ingest_id*/)
-{
-    return ERROR_SUCCESS;
-}
-
-int ISrsReloadHandler::on_reload_user_info()
-{
-    return ERROR_SUCCESS;
+    return srs_success;
 }
 

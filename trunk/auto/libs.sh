@@ -14,11 +14,12 @@ FILE=${SRS_OBJS}/${SRS_MAKEFILE}
 LIB_TARGET="${SRS_OBJS_DIR}/${LIB_NAME}"
 LIB_TAGET_STATIC="${LIB_TARGET}.a"
 
-echo "generate lib ${LIB_NAME} depends..."
+echo "Generating lib ${LIB_NAME} depends."
 
 echo "" >> ${FILE}
 echo "# archive library ${LIB_TAGET_STATIC}" >> ${FILE}
 echo "${BUILD_KEY}: ${LIB_TAGET_STATIC}" >> ${FILE}
+echo "" >> ${FILE}
 
 # build depends
 echo -n "${LIB_TAGET_STATIC}: " >> ${FILE}
@@ -41,7 +42,7 @@ echo -n "	@bash auto/generate_header.sh ${SRS_OBJS_DIR}" >> ${FILE}
 echo "" >> ${FILE}
 
 # archive librtmp.a
-echo -n "	\$(AR) -rs ${LIB_TAGET_STATIC} " >> ${FILE}
+echo -n "	\$(AR) \$(ARFLAGS) ${LIB_TAGET_STATIC} " >> ${FILE}
 for item in ${MODULE_OBJS[*]}; do
     FILE_NAME=`basename $item`
     FILE_NAME=${FILE_NAME%.*}
@@ -60,4 +61,4 @@ echo "" >> ${FILE}
 echo "	@mkdir -p ${SRS_OBJS_DIR}/include" >> ${SRS_WORKDIR}/${SRS_MAKEFILE}
 echo "	@mkdir -p ${SRS_OBJS_DIR}/lib" >> ${SRS_WORKDIR}/${SRS_MAKEFILE}
 
-echo -n "generate lib ${LIB_NAME} ok"; echo '!';
+echo -n "Generate lib ${LIB_NAME} ok"; echo '!';

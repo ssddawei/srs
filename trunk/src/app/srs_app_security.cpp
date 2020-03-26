@@ -1,25 +1,25 @@
-/*
-The MIT License (MIT)
-
-Copyright (c) 2013-2015 SRS(ossrs)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013-2020 Winlin
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #include <srs_app_security.hpp>
 
@@ -36,47 +36,56 @@ SrsSecurity::~SrsSecurity()
 {
 }
 
-int SrsSecurity::check(SrsRtmpConnType type, string ip, SrsRequest* req)
+srs_error_t SrsSecurity::check(SrsRtmpConnType type, string ip, SrsRequest* req)
 {
-    int ret = ERROR_SUCCESS;
-    
+    srs_error_t err = srs_success;
+
     // allow all if security disabled.
     if (!_srs_config->get_security_enabled(req->vhost)) {
-        return ret;
+        return err; // OK
     }
-    
-    // default to deny all when security enabled.
-    ret = ERROR_SYSTEM_SECURITY;
-    
+
     // rules to apply
     SrsConfDirective* rules = _srs_config->get_security_rules(req->vhost);
+    return do_check(rules, type, ip, req);
+}
+
+srs_error_t SrsSecurity::do_check(SrsConfDirective* rules, SrsRtmpConnType type, string ip, SrsRequest* req)
+{
+    srs_error_t err = srs_success;
+
     if (!rules) {
-        return ret;
+        return srs_error_new(ERROR_SYSTEM_SECURITY, "default deny for %s", ip.c_str());
+    }
+
+    // deny if matches deny strategy.
+    if ((err = deny_check(rules, type, ip)) != srs_success) {
+        return srs_error_wrap(err, "for %s", ip.c_str());
     }
     
     // allow if matches allow strategy.
-    if (allow_check(rules, type, ip) == ERROR_SYSTEM_SECURITY_ALLOW) {
-        ret = ERROR_SUCCESS;
+    if ((err = allow_check(rules, type, ip)) != srs_success) {
+        return srs_error_wrap(err, "for %s", ip.c_str());
     }
-    
-    // deny if matches deny strategy.
-    if (deny_check(rules, type, ip) == ERROR_SYSTEM_SECURITY_DENY) {
-        ret = ERROR_SYSTEM_SECURITY_DENY;
-    }
-    
-    return ret;
+
+    return err;
 }
 
-int SrsSecurity::allow_check(SrsConfDirective* rules, SrsRtmpConnType type, std::string ip)
+srs_error_t SrsSecurity::allow_check(SrsConfDirective* rules, SrsRtmpConnType type, std::string ip)
 {
-    int ret = ERROR_SUCCESS;
-    
+    int allow_rules = 0;
+    int deny_rules = 0;
+
     for (int i = 0; i < (int)rules->directives.size(); i++) {
         SrsConfDirective* rule = rules->at(i);
-        
+
         if (rule->name != "allow") {
+            if (rule->name == "deny") {
+                deny_rules++;
+            }
             continue;
         }
+        allow_rules++;
 
         switch (type) {
             case SrsRtmpConnPlay:
@@ -84,8 +93,7 @@ int SrsSecurity::allow_check(SrsConfDirective* rules, SrsRtmpConnType type, std:
                     break;
                 }
                 if (rule->arg1() == "all" || rule->arg1() == ip) {
-                    ret = ERROR_SYSTEM_SECURITY_ALLOW;
-                    break;
+                    return srs_success; // OK
                 }
                 break;
             case SrsRtmpConnFMLEPublish:
@@ -95,43 +103,37 @@ int SrsSecurity::allow_check(SrsConfDirective* rules, SrsRtmpConnType type, std:
                     break;
                 }
                 if (rule->arg1() == "all" || rule->arg1() == ip) {
-                    ret = ERROR_SYSTEM_SECURITY_ALLOW;
-                    break;
+                    return srs_success; // OK
                 }
                 break;
             case SrsRtmpConnUnknown:
             default:
                 break;
         }
-        
-        // when matched, donot search more.
-        if (ret == ERROR_SYSTEM_SECURITY_ALLOW) {
-            break;
-        }
     }
-    
-    return ret;
+
+    if (allow_rules > 0 || (deny_rules + allow_rules) == 0) {
+        return srs_error_new(ERROR_SYSTEM_SECURITY_ALLOW, "not allowed by any of %d/%d rules", allow_rules, deny_rules);
+    }
+    return srs_success; // OK
 }
 
-int SrsSecurity::deny_check(SrsConfDirective* rules, SrsRtmpConnType type, std::string ip)
+srs_error_t SrsSecurity::deny_check(SrsConfDirective* rules, SrsRtmpConnType type, std::string ip)
 {
-    int ret = ERROR_SUCCESS;
-    
     for (int i = 0; i < (int)rules->directives.size(); i++) {
         SrsConfDirective* rule = rules->at(i);
         
         if (rule->name != "deny") {
             continue;
         }
-
+        
         switch (type) {
             case SrsRtmpConnPlay:
                 if (rule->arg0() != "play") {
                     break;
                 }
                 if (rule->arg1() == "all" || rule->arg1() == ip) {
-                    ret = ERROR_SYSTEM_SECURITY_DENY;
-                    break;
+                    return srs_error_new(ERROR_SYSTEM_SECURITY_DENY, "deny by rule<%s>", rule->arg1().c_str());
                 }
                 break;
             case SrsRtmpConnFMLEPublish:
@@ -141,21 +143,15 @@ int SrsSecurity::deny_check(SrsConfDirective* rules, SrsRtmpConnType type, std::
                     break;
                 }
                 if (rule->arg1() == "all" || rule->arg1() == ip) {
-                    ret = ERROR_SYSTEM_SECURITY_DENY;
-                    break;
+                    return srs_error_new(ERROR_SYSTEM_SECURITY_DENY, "deny by rule<%s>", rule->arg1().c_str());
                 }
                 break;
             case SrsRtmpConnUnknown:
             default:
                 break;
         }
-        
-        // when matched, donot search more.
-        if (ret == ERROR_SYSTEM_SECURITY_DENY) {
-            break;
-        }
     }
     
-    return ret;
+    return srs_success; // OK
 }
 

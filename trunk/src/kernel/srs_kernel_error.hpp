@@ -1,42 +1,40 @@
-/*
-The MIT License (MIT)
-
-Copyright (c) 2013-2015 SRS(ossrs)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013-2020 Winlin
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #ifndef SRS_KERNEL_ERROR_HPP
 #define SRS_KERNEL_ERROR_HPP
 
-/*
-#include <srs_kernel_error.hpp>
-*/
-
 #include <srs_core.hpp>
 
-// for srs-librtmp, @see https://github.com/ossrs/srs/issues/213
+#include <string>
+
+// For srs-librtmp, @see https://github.com/ossrs/srs/issues/213
 #ifndef _WIN32
 #define ERROR_SUCCESS                       0
 #endif
 
 ///////////////////////////////////////////////////////
-// system error.
+// The system error.
 ///////////////////////////////////////////////////////
 #define ERROR_SOCKET_CREATE                 1000
 #define ERROR_SOCKET_SETREUSE               1001
@@ -81,7 +79,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ERROR_SYSTEM_PID_SET_FILE_INFO      1040
 #define ERROR_SYSTEM_FILE_ALREADY_OPENED    1041
 #define ERROR_SYSTEM_FILE_OPENE             1042
-#define ERROR_SYSTEM_FILE_CLOSE             1043
+//#define ERROR_SYSTEM_FILE_CLOSE             1043
 #define ERROR_SYSTEM_FILE_READ              1044
 #define ERROR_SYSTEM_FILE_WRITE             1045
 #define ERROR_SYSTEM_FILE_EOF               1046
@@ -97,8 +95,29 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ERROR_SYSTEM_DIR_EXISTS             1056
 #define ERROR_SYSTEM_CREATE_DIR             1057
 #define ERROR_SYSTEM_KILL                   1058
-#define ERROR_SYSTEM_DNS_RESOLVE            1059
-#define ERROR_SOCKET_SETKEEPALIVE           1060
+#define ERROR_SYSTEM_CONFIG_PERSISTENCE     1059
+#define ERROR_SYSTEM_CONFIG_RAW             1060
+#define ERROR_SYSTEM_CONFIG_RAW_DISABLED    1061
+#define ERROR_SYSTEM_CONFIG_RAW_NOT_ALLOWED 1062
+#define ERROR_SYSTEM_CONFIG_RAW_PARAMS      1063
+#define ERROR_SYSTEM_FILE_NOT_EXISTS        1064
+#define ERROR_SYSTEM_HOURGLASS_RESOLUTION   1065
+#define ERROR_SYSTEM_DNS_RESOLVE            1066
+#define ERROR_SYSTEM_FRAGMENT_UNLINK        1067
+#define ERROR_SYSTEM_FRAGMENT_RENAME        1068
+#define ERROR_THREAD_DISPOSED               1069
+#define ERROR_THREAD_INTERRUPED             1070
+#define ERROR_THREAD_TERMINATED             1071
+#define ERROR_THREAD_DUMMY                  1072
+#define ERROR_ASPROCESS_PPID                1073
+#define ERROR_EXCEED_CONNECTIONS            1074
+#define ERROR_SOCKET_SETKEEPALIVE           1075
+#define ERROR_SOCKET_NO_NODELAY             1076
+#define ERROR_SOCKET_SNDBUF                 1077
+#define ERROR_THREAD_STARTED                1078
+#define ERROR_SOCKET_SETREUSEADDR           1079
+#define ERROR_SOCKET_SETCLOSEEXEC           1080
+#define ERROR_SOCKET_ACCEPT                 1081
 
 ///////////////////////////////////////////////////////
 // RTMP protocol error.
@@ -153,17 +172,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ERROR_RTSP_AUDIO_CONFIG             2047
 #define ERROR_RTMP_STREAM_NOT_FOUND         2048
 #define ERROR_RTMP_CLIENT_NOT_FOUND         2049
-#define ERROR_RTMP_STREAM_NAME_EMPTY        2050
-//                                           
-// system control message, 
-// not an error, but special control logic.
-// sys ctl: rtmp close stream, support replay.
+#define ERROR_OpenSslCreateHMAC             2050
+#define ERROR_RTMP_STREAM_NAME_EMPTY        2051
+#define ERROR_HTTP_HIJACK                   2052
+#define ERROR_RTMP_MESSAGE_CREATE           2053
+#define ERROR_RTMP_PROXY_EXCEED             2054
+#define ERROR_RTMP_CREATE_STREAM_DEPTH      2055
+//
+// The system control message,
+// It's not an error, but special control logic.
+//
+// When connection is redirect to another server.
+#define ERROR_CONTROL_REDIRECT              2997
+// For sys ctl: rtmp close stream, support replay.
 #define ERROR_CONTROL_RTMP_CLOSE            2998
-// FMLE stop publish and republish.
+// When FMLE stop publish and republish.
 #define ERROR_CONTROL_REPUBLISH             2999
 
 ///////////////////////////////////////////////////////
-// application level
+// The application level errors.
 ///////////////////////////////////////////////////////
 #define ERROR_HLS_METADATA                  3000
 #define ERROR_HLS_DECODE_ERROR              3001
@@ -195,8 +222,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ERROR_ENCODER_VBITRATE              3027
 #define ERROR_ENCODER_FORK                  3028
 #define ERROR_ENCODER_LOOP                  3029
-#define ERROR_ENCODER_OPEN                  3030
-#define ERROR_ENCODER_DUP2                  3031
+#define ERROR_FORK_OPEN_LOG                 3030
+#define ERROR_FORK_DUP2_LOG                 3031
 #define ERROR_ENCODER_PARSE                 3032
 #define ERROR_ENCODER_NO_INPUT              3033
 #define ERROR_ENCODER_NO_OUTPUT             3034
@@ -232,7 +259,34 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ERROR_RESPONSE_CODE                 3064
 #define ERROR_RESPONSE_DATA                 3065
 #define ERROR_REQUEST_DATA                  3066
-#define ERROR_TS_CONTEXT_NOT_READY          3067
+#define ERROR_EDGE_PORT_INVALID             3067
+#define ERROR_EXPECT_FILE_IO                3068
+#define ERROR_MP4_BOX_OVERFLOW              3069
+#define ERROR_MP4_BOX_REQUIRE_SPACE         3070
+#define ERROR_MP4_BOX_ILLEGAL_TYPE          3071
+#define ERROR_MP4_BOX_ILLEGAL_SCHEMA        3072
+#define ERROR_MP4_BOX_STRING                3073
+#define ERROR_MP4_BOX_ILLEGAL_BRAND         3074
+#define ERROR_MP4_ESDS_SL_Config            3075
+#define ERROR_MP4_ILLEGAL_MOOV              3076
+#define ERROR_MP4_ILLEGAL_HANDLER           3077
+#define ERROR_MP4_ILLEGAL_TRACK             3078
+#define ERROR_MP4_MOOV_OVERFLOW             3079
+#define ERROR_MP4_ILLEGAL_SAMPLES           3080
+#define ERROR_MP4_ILLEGAL_TIMESTAMP         3081
+#define ERROR_DVR_CANNOT_APPEND             3082
+#define ERROR_DVR_ILLEGAL_PLAN              3083
+#define ERROR_FLV_REQUIRE_SPACE             3084
+#define ERROR_MP4_AVCC_CHANGE               3085
+#define ERROR_MP4_ASC_CHANGE                3086
+#define ERROR_DASH_WRITE_FAILED             3087
+#define ERROR_TS_CONTEXT_NOT_READY          3088
+#define ERROR_MP4_ILLEGAL_MOOF              3089
+#define ERROR_OCLUSTER_DISCOVER             3090
+#define ERROR_OCLUSTER_REDIRECT             3091
+#define ERROR_INOTIFY_CREATE                3092
+#define ERROR_INOTIFY_OPENFD                3093
+#define ERROR_INOTIFY_WATCH                 3094
 
 ///////////////////////////////////////////////////////
 // HTTP/StreamCaster protocol error.
@@ -267,6 +321,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ERROR_AVC_NALU_UEV                  4027
 #define ERROR_AAC_BYTES_INVALID             4028
 #define ERROR_HTTP_REQUEST_EOF              4029
+#define ERROR_HTTP_302_INVALID              4038
+#define ERROR_BASE64_DECODE                 4039
+#define ERROR_HTTP_STREAM_EOF               4040
 
 ///////////////////////////////////////////////////////
 // HTTP API error.
@@ -274,32 +331,62 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //#define ERROR_API_METHOD_NOT_ALLOWD
 
 ///////////////////////////////////////////////////////
-// user-define error.
+// For user-define error.
 ///////////////////////////////////////////////////////
 #define ERROR_USER_START                    9000
-#define ERROR_USER_DISCONNECT               9001
+//#define ERROR_USER_DISCONNECT               9001
 #define ERROR_SOURCE_NOT_FOUND              9002
 #define ERROR_USER_END                      9999
 
-/**
-* whether the error code is an system control error.
-*/
-extern bool srs_is_system_control_error(int error_code);
-extern bool srs_is_client_gracefully_close(int error_code);
+// Whether the error code is an system control error.
+// TODO: FIXME: Remove it from underlayer for confused with error and logger.
+extern bool srs_is_system_control_error(srs_error_t err);
+// It's closed by client.
+extern bool srs_is_client_gracefully_close(srs_error_t err);
+// It's closed by server, such as streaming EOF.
+extern bool srs_is_server_gracefully_close(srs_error_t err);
 
-/**
-@remark: use column copy to generate the new error codes.
-01234567890
-01234567891
-01234567892
-01234567893
-01234567894
-01234567895
-01234567896
-01234567897
-01234567898
-01234567899
-*/
+// The complex error carries code, message, callstack and instant variables,
+// which is more strong and easy to locate problem by log,
+// please @read https://github.com/ossrs/srs/issues/913
+class SrsCplxError
+{
+private:
+    int code;
+    SrsCplxError* wrapped;
+    std::string msg;
+    
+    std::string func;
+    std::string file;
+    int line;
+    
+    int cid;
+    int rerrno;
+    
+    std::string desc;
+private:
+    SrsCplxError();
+public:
+    virtual ~SrsCplxError();
+private:
+    virtual std::string description();
+public:
+    static SrsCplxError* create(const char* func, const char* file, int line, int code, const char* fmt, ...);
+    static SrsCplxError* wrap(const char* func, const char* file, int line, SrsCplxError* err, const char* fmt, ...);
+    static SrsCplxError* success();
+    static SrsCplxError* copy(SrsCplxError* from);
+    static std::string description(SrsCplxError* err);
+    static int error_code(SrsCplxError* err);
+};
+
+// Error helpers, should use these functions to new or wrap an error.
+#define srs_success SrsCplxError::success()
+#define srs_error_new(ret, fmt, ...) SrsCplxError::create(__FUNCTION__, __FILE__, __LINE__, ret, fmt, ##__VA_ARGS__)
+#define srs_error_wrap(err, fmt, ...) SrsCplxError::wrap(__FUNCTION__, __FILE__, __LINE__, err, fmt, ##__VA_ARGS__)
+#define srs_error_copy(err) SrsCplxError::copy(err)
+#define srs_error_desc(err) SrsCplxError::description(err)
+#define srs_error_code(err) SrsCplxError::error_code(err)
+#define srs_error_reset(err) srs_freep(err); err = srs_success
 
 #endif
 

@@ -2,8 +2,8 @@
 
 ### BEGIN INIT INFO
 # Provides:          ossrs-api(srs-api)
-# RequiRED-Start:    $all
-# RequiRED-Stop:     $all
+# Required-Start:    $all
+# Required-Stop:     $all
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: ossrs-api(srs-api)
@@ -54,7 +54,7 @@ start() {
     ok_msg "Starting SRS-api..."
     # TODO: FIXME: set limit by, for instance, "ulimit -HSn 10000"
     # TODO: FIXME: write log to, for instance, the same dir of log.
-    # TODO: FIXME: support deamon, without nohup.
+    # TODO: FIXME: support daemon, without nohup.
     (cd ${ROOT}; nohup ${APP} ${CONFIG} >/dev/null 2>&1 &)
     
     # check again after start server

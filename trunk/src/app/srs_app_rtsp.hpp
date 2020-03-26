@@ -1,32 +1,28 @@
-/*
-The MIT License (MIT)
-
-Copyright (c) 2013-2015 SRS(ossrs)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013-2020 Winlin
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #ifndef SRS_APP_RTSP_HPP
 #define SRS_APP_RTSP_HPP
-
-/*
-#include <srs_app_rtsp.hpp>
-*/
 
 #include <srs_core.hpp>
 
@@ -37,8 +33,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <srs_app_st.hpp>
 #include <srs_app_thread.hpp>
 #include <srs_app_listener.hpp>
-
-#ifdef SRS_AUTO_STREAM_CASTER
 
 class SrsStSocket;
 class SrsRtspConn;
@@ -53,13 +47,12 @@ class SrsRawH264Stream;
 class SrsRawAacStream;
 struct SrsRawAacStreamCodec;
 class SrsSharedPtrMessage;
-class SrsCodecSample;
-class SrsSimpleBuffer;
+class SrsAudioFrame;
+class SrsSimpleStream;
 class SrsPithyPrint;
+class SrsSimpleRtmpClient;
 
-/**
-* a rtp connection which transport a stream.
-*/
+// A rtp connection which transport a stream.
 class SrsRtpConn: public ISrsUdpHandler
 {
 private:
@@ -74,28 +67,24 @@ public:
     virtual ~SrsRtpConn();
 public:
     virtual int port();
-    virtual int listen();
-// interface ISrsUdpHandler
+    virtual srs_error_t listen();
+// Interface ISrsUdpHandler
 public:
-    virtual int on_udp_packet(sockaddr_in* from, char* buf, int nb_buf);
+    virtual srs_error_t on_udp_packet(const sockaddr* from, const int fromlen, char* buf, int nb_buf);
 };
 
-/**
-* audio is group by frames.
-*/
+// The audio cache, audio is grouped by frames.
 struct SrsRtspAudioCache
 {
     int64_t dts;
-    SrsCodecSample* audio_samples;
-    SrsSimpleBuffer* payload;
-
+    SrsAudioFrame* audio;
+    SrsSimpleStream* payload;
+    
     SrsRtspAudioCache();
     virtual ~SrsRtspAudioCache();
 };
 
-/**
-* the time jitter correct for rtsp.
-*/
+// The time jitter correct for rtsp.
 class SrsRtspJitter
 {
 private:
@@ -107,13 +96,11 @@ public:
     virtual ~SrsRtspJitter();
 public:
     virtual int64_t timestamp();
-    virtual int correct(int64_t& ts);
+    virtual srs_error_t correct(int64_t& ts);
 };
 
-/**
-* the rtsp connection serve the fd.
-*/
-class SrsRtspConn : public ISrsOneCycleThreadHandler
+// The rtsp connection serve the fd.
+class SrsRtspConn : public ISrsCoroutineHandler, public ISrsConnection
 {
 private:
     std::string output_template;
@@ -132,18 +119,16 @@ private:
     int audio_channel;
     SrsRtpConn* audio_rtp;
 private:
-    st_netfd_t stfd;
+    srs_netfd_t stfd;
     SrsStSocket* skt;
     SrsRtspStack* rtsp;
     SrsRtspCaster* caster;
-    SrsOneCycleThread* trd;
+    SrsCoroutine* trd;
 private:
     SrsRequest* req;
-    SrsStSocket* io;
-    SrsRtmpClient* client;
+    SrsSimpleRtmpClient* sdk;
     SrsRtspJitter* vjitter;
     SrsRtspJitter* ajitter;
-    int stream_id;
 private:
     SrsRawH264Stream* avc;
     std::string h264_sps;
@@ -154,65 +139,61 @@ private:
     std::string aac_specific_config;
     SrsRtspAudioCache* acache;
 public:
-    SrsRtspConn(SrsRtspCaster* c, st_netfd_t fd, std::string o);
+    SrsRtspConn(SrsRtspCaster* c, srs_netfd_t fd, std::string o);
     virtual ~SrsRtspConn();
 public:
-    virtual int serve();
+    virtual srs_error_t serve();
+    virtual std::string remote_ip();
 private:
-    virtual int do_cycle();
+    virtual srs_error_t do_cycle();
 // internal methods
 public:
-    virtual int on_rtp_packet(SrsRtpPacket* pkt, int stream_id);
-// interface ISrsOneCycleThreadHandler
+    virtual srs_error_t on_rtp_packet(SrsRtpPacket* pkt, int stream_id);
+// Interface ISrsOneCycleThreadHandler
 public:
-    virtual int cycle();
-    virtual void on_thread_stop();
+    virtual srs_error_t cycle();
 private:
-    virtual int on_rtp_video(SrsRtpPacket* pkt, int64_t dts, int64_t pts);
-    virtual int on_rtp_audio(SrsRtpPacket* pkt, int64_t dts);
-    virtual int kickoff_audio_cache(SrsRtpPacket* pkt, int64_t dts);
+    virtual srs_error_t on_rtp_video(SrsRtpPacket* pkt, int64_t dts, int64_t pts);
+    virtual srs_error_t on_rtp_audio(SrsRtpPacket* pkt, int64_t dts);
+    virtual srs_error_t kickoff_audio_cache(SrsRtpPacket* pkt, int64_t dts);
 private:
-    virtual int write_sequence_header();
-    virtual int write_h264_sps_pps(u_int32_t dts, u_int32_t pts);
-    virtual int write_h264_ipb_frame(char* frame, int frame_size, u_int32_t dts, u_int32_t pts);
-    virtual int write_audio_raw_frame(char* frame, int frame_size, SrsRawAacStreamCodec* codec, u_int32_t dts);
-    virtual int rtmp_write_packet(char type, u_int32_t timestamp, char* data, int size);
+    virtual srs_error_t write_sequence_header();
+    virtual srs_error_t write_h264_sps_pps(uint32_t dts, uint32_t pts);
+    virtual srs_error_t write_h264_ipb_frame(char* frame, int frame_size, uint32_t dts, uint32_t pts);
+    virtual srs_error_t write_audio_raw_frame(char* frame, int frame_size, SrsRawAacStreamCodec* codec, uint32_t dts);
+    virtual srs_error_t rtmp_write_packet(char type, uint32_t timestamp, char* data, int size);
 private:
-    // connect to rtmp output url. 
-    // @remark ignore when not connected, reconnect when disconnected.
-    virtual int connect();
-    virtual int connect_app(std::string ep_server, std::string ep_port);
+    // Connect to RTMP server.
+    virtual srs_error_t connect();
+    // Close the connection to RTMP server.
+    virtual void close();
 };
 
-/**
-* the caster for rtsp.
-*/
+// The caster for rtsp.
 class SrsRtspCaster : public ISrsTcpHandler
 {
 private:
     std::string output;
     int local_port_min;
     int local_port_max;
-    // key: port, value: whether used.
+    // The key: port, value: whether used.
     std::map<int, bool> used_ports;
 private:
     std::vector<SrsRtspConn*> clients;
+    SrsCoroutineManager* manager;
 public:
     SrsRtspCaster(SrsConfDirective* c);
     virtual ~SrsRtspCaster();
 public:
-    /**
-    * alloc a rtp port from local ports pool.
-    * @param pport output the rtp port.
-    */
-    virtual int alloc_port(int* pport);
-    /**
-    * free the alloced rtp port.
-    */
+    // Alloc a rtp port from local ports pool.
+    // @param pport output the rtp port.
+    virtual srs_error_t alloc_port(int* pport);
+    // Free the alloced rtp port.
     virtual void free_port(int lpmin, int lpmax);
-// interface ISrsTcpHandler
+    virtual srs_error_t initialize();
+// Interface ISrsTcpHandler
 public:
-    virtual int on_tcp_client(st_netfd_t stfd);
+    virtual srs_error_t on_tcp_client(srs_netfd_t stfd);
 // internal methods.
 public:
     virtual void remove(SrsRtspConn* conn);
@@ -220,4 +201,3 @@ public:
 
 #endif
 
-#endif

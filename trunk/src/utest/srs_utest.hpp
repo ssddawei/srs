@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2013-2015 SRS(ossrs)
+Copyright (c) 2013-2020 Winlin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -24,44 +24,58 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef SRS_UTEST_PUBLIC_SHARED_HPP
 #define SRS_UTEST_PUBLIC_SHARED_HPP
 
+// Public all private and protected members.
+#define private public
+#define protected public
+
 /*
 #include <srs_utest.hpp>
 */
 #include <srs_core.hpp>
 
 #include "gtest/gtest.h"
+#include <string>
+using namespace std;
 
 #include <srs_app_log.hpp>
-
-#define SRS_UTEST_DEV
-#undef SRS_UTEST_DEV
-
-// enable all utest.
-#ifndef SRS_UTEST_DEV
-    #define ENABLE_UTEST_AMF0
-    #define ENABLE_UTEST_CONFIG
-    #define ENABLE_UTEST_CORE
-    #define ENABLE_UTEST_KERNEL
-    #define ENABLE_UTEST_PROTOCOL
-    #define ENABLE_UTEST_RELOAD
-#endif
-
-// disable some for fast dev, compile and startup.
-#ifdef SRS_UTEST_DEV
-    #undef ENABLE_UTEST_AMF0
-    #undef ENABLE_UTEST_CONFIG
-    #undef ENABLE_UTEST_CORE
-    #undef ENABLE_UTEST_KERNEL
-    #undef ENABLE_UTEST_PROTOCOL
-    #undef ENABLE_UTEST_RELOAD
-#endif
-
-#ifdef SRS_UTEST_DEV
-    #define ENABLE_UTEST_RELOAD
-#endif
+#include <srs_kernel_stream.hpp>
 
 // we add an empty macro for upp to show the smart tips.
 #define VOID
+
+// Temporary disk config.
+extern std::string _srs_tmp_file_prefix;
+// Temporary network config.
+extern std::string _srs_tmp_host;
+extern int _srs_tmp_port;
+extern srs_utime_t _srs_tmp_timeout;
+
+// For errors.
+#define HELPER_EXPECT_SUCCESS(x) \
+    if ((err = x) != srs_success) fprintf(stderr, "err %s", srs_error_desc(err).c_str()); \
+    EXPECT_TRUE(srs_success == err); \
+    srs_freep(err)
+#define HELPER_EXPECT_FAILED(x) EXPECT_TRUE(srs_success != (err = x)); srs_freep(err)
+
+// For errors, assert.
+// @remark The err is leak when error, but it's ok in utest.
+#define HELPER_ASSERT_SUCCESS(x) \
+    if ((err = x) != srs_success) fprintf(stderr, "err %s", srs_error_desc(err).c_str()); \
+    ASSERT_TRUE(srs_success == err); \
+    srs_freep(err)
+#define HELPER_ASSERT_FAILED(x) ASSERT_TRUE(srs_success != (err = x)); srs_freep(err)
+
+// For init array data.
+#define HELPER_ARRAY_INIT(buf, sz, val) \
+    for (int i = 0; i < (int)sz; i++) (buf)[i]=val
+
+// Dump simple stream to string.
+#define HELPER_BUFFER2STR(io) \
+    string((const char*)(io)->bytes(), (size_t)(io)->length())
+
+// Covert uint8_t array to string.
+#define HELPER_ARR2STR(arr, size) \
+    string((char*)(arr), (int)size)
 
 // the asserts of gtest:
 //    * {ASSERT|EXPECT}_EQ(expected, actual): Tests that expected == actual
@@ -84,7 +98,7 @@ void srs_bytes_print(char* pa, int size);
 class MockEmptyLog : public SrsFastLog
 {
 public:
-    MockEmptyLog(int level);
+    MockEmptyLog(SrsLogLevel l);
     virtual ~MockEmptyLog();
 };
 

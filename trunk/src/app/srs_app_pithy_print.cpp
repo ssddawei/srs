@@ -1,25 +1,25 @@
-/*
-The MIT License (MIT)
-
-Copyright (c) 2013-2015 SRS(ossrs)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013-2020 Winlin
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #include <srs_app_pithy_print.hpp>
 
@@ -49,17 +49,17 @@ SrsStageInfo::~SrsStageInfo()
 
 void SrsStageInfo::update_print_time()
 {
-    pithy_print_time_ms = _srs_config->get_pithy_print_ms();
+    interval = _srs_config->get_pithy_print();
 }
 
-void SrsStageInfo::elapse(int64_t diff)
+void SrsStageInfo::elapse(srs_utime_t diff)
 {
     age += diff;
 }
 
 bool SrsStageInfo::can_print()
 {
-    int64_t can_print_age = nb_clients * pithy_print_time_ms;
+    srs_utime_t can_print_age = nb_clients * interval;
     
     bool can_print = age >= can_print_age;
     if (can_print) {
@@ -69,19 +69,19 @@ bool SrsStageInfo::can_print()
     return can_print;
 }
 
-int SrsStageInfo::on_reload_pithy_print()
+srs_error_t SrsStageInfo::on_reload_pithy_print()
 {
     update_print_time();
-    return ERROR_SUCCESS;
+    return srs_success;
 }
-    
+
 static std::map<int, SrsStageInfo*> _srs_stages;
 
 SrsPithyPrint::SrsPithyPrint(int _stage_id)
 {
     stage_id = _stage_id;
     client_id = enter_stage();
-    previous_tick = srs_get_system_time_ms();
+    previous_tick = srs_get_system_time();
     _age = 0;
 }
 
@@ -108,6 +108,8 @@ SrsPithyPrint::SrsPithyPrint(int _stage_id)
 #define SRS_CONSTS_STAGE_HTTP_STREAM 9
 // the pithy stage for all http stream cache.
 #define SRS_CONSTS_STAGE_HTTP_STREAM_CACHE 10
+// for the ng-exec stage.
+#define SRS_CONSTS_STAGE_EXEC 11
 
 SrsPithyPrint* SrsPithyPrint::create_rtmp_play()
 {
@@ -132,6 +134,11 @@ SrsPithyPrint* SrsPithyPrint::create_forwarder()
 SrsPithyPrint* SrsPithyPrint::create_encoder()
 {
     return new SrsPithyPrint(SRS_CONSTS_STAGE_ENCODER);
+}
+
+SrsPithyPrint* SrsPithyPrint::create_exec()
+{
+    return new SrsPithyPrint(SRS_CONSTS_STAGE_EXEC);
 }
 
 SrsPithyPrint* SrsPithyPrint::create_ingester()
@@ -178,9 +185,9 @@ int SrsPithyPrint::enter_stage()
     
     srs_assert(stage != NULL);
     client_id = stage->nb_clients++;
-
+    
     srs_verbose("enter stage, stage_id=%d, client_id=%d, nb_clients=%d, time_ms=%d",
-        stage->stage_id, client_id, stage->nb_clients, stage->pithy_print_time_ms);
+                stage->stage_id, client_id, stage->nb_clients, stage->pithy_print_time_ms);
     
     return client_id;
 }
@@ -191,9 +198,9 @@ void SrsPithyPrint::leave_stage()
     srs_assert(stage != NULL);
     
     stage->nb_clients--;
-
+    
     srs_verbose("leave stage, stage_id=%d, client_id=%d, nb_clients=%d, time_ms=%d",
-        stage->stage_id, client_id, stage->nb_clients, stage->pithy_print_time_ms);
+                stage->stage_id, client_id, stage->nb_clients, stage->pithy_print_time_ms);
 }
 
 void SrsPithyPrint::elapse()
@@ -201,12 +208,12 @@ void SrsPithyPrint::elapse()
     SrsStageInfo* stage = _srs_stages[stage_id];
     srs_assert(stage != NULL);
     
-    int64_t diff = srs_get_system_time_ms() - previous_tick;
+    srs_utime_t diff = srs_get_system_time() - previous_tick;
     diff = srs_max(0, diff);
     
     stage->elapse(diff);
     _age += diff;
-    previous_tick = srs_get_system_time_ms();
+    previous_tick = srs_get_system_time();
 }
 
 bool SrsPithyPrint::can_print()
@@ -217,7 +224,7 @@ bool SrsPithyPrint::can_print()
     return stage->can_print();
 }
 
-int64_t SrsPithyPrint::age()
+srs_utime_t SrsPithyPrint::age()
 {
     return _age;
 }
